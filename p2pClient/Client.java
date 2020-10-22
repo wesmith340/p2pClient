@@ -1,9 +1,12 @@
+/*--------------------------------------------------------------------------------------------------------------------*/
+/* Project 2                                                                                                          */
+/* This application is designed to handle one Client in a Peer-to-Peer file sharing format                            */
+/* @author SVSU - CS 401 - Weston Smith                                                                               */
+/*--------------------------------------------------------------------------------------------------------------------*/
+
 package p2pClient;
 
-// The client class will implement the functions listed in the project description.
-
 import Packet.Packet;
-import Packet.Packet.EVENT_TYPE;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -15,7 +18,7 @@ import java.util.Scanner;
  * This class is designed to handle client side operations for a Peer-to-Peer style file-sharer
  */
 public class Client extends Thread{
-
+    // Declarations
     protected int serverPort;
     protected InetAddress ip;
     protected Socket s;
@@ -26,7 +29,8 @@ public class Client extends Thread{
     protected char FILE_VECTOR[];
 
     private boolean running = true;
-
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Constructors
     /**
      * No-Arg Constructor
      */
@@ -38,16 +42,27 @@ public class Client extends Thread{
         FILE_VECTOR = new char[64];
         Arrays.fill(FILE_VECTOR, '0');
     }
+
+    /**
+     * Constructor
+     * @param peerID
+     * @param peerListenPort
+     * @param FILE_VECTOR
+     * @param ip
+     * @param serverPort
+     */
     public Client(int peerID, int peerListenPort, char[] FILE_VECTOR, String ip, int serverPort) {
         this.peerID = peerID;
         this.peerListenPort = peerListenPort;
         this.FILE_VECTOR = FILE_VECTOR;
         connectToServer(ip, serverPort);
     }
+    //---------------------------------------------------------------------
+    // Methods used solely by Constructors
     /**
      * This method connects the client to the server
      */
-    public void connectToServer(String ip, int serverPort) {
+    private void connectToServer(String ip, int serverPort) {
         boolean connected = false;
         try {
             s = new Socket(ip, serverPort);
@@ -64,9 +79,9 @@ public class Client extends Thread{
             System.out.println("Unable to connect to the server");
             System.exit(0);
         }
-
     }
-
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Run method for threading
     /**
      * This method listens for incoming Packets to be handled
      */
@@ -84,7 +99,6 @@ public class Client extends Thread{
             while (running) {
                 eventHandler((Packet)inputStream.readObject());
             }
-
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error creating I/O stream");
@@ -93,10 +107,49 @@ public class Client extends Thread{
             e.printStackTrace();
             System.out.println("p2pClient package does not contain this class");
         }
-
-
     }
-
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Methods handling incoming Packets
+    /**
+     * This method determines what the Packet is to be used for
+     * @param packet
+     */
+    private void eventHandler(Packet packet) {
+        switch (packet.event_type) {
+            case REPLY : // Server is replying with to a file request
+                fileLookupResult(packet.peerID);
+                break;
+            case QUIT_SERVER : // Server is closing the connection
+                closeConnection();
+                break;
+        }
+    }
+    /**
+     * This method outputs the results of the file lookup
+     * @param fileHolderId
+     */
+    private void fileLookupResult(int fileHolderId) {
+        if (fileHolderId >= 0) {
+            System.out.println("Client " + fileHolderId + " has the file");
+        } else {
+            System.out.println("No one has this file");
+        }
+    }
+    /**
+     * This method closes the connection with the Server
+     */
+    public void closeConnection(){
+        try {
+            s.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        running = false;
+        System.out.println("Connection Closed");
+        System.exit(0);
+    }
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Methods for sending Packets
     /**
      * This method builds a packet to be sent to the server. The packet contains the information
      * for the server to see which other clients have the file.
@@ -119,56 +172,6 @@ public class Client extends Thread{
             System.out.println("You already have file "+fileIndex);
         }
     }
-
-    /**
-     * This method determines what the Packet is to be used for
-     * @param packet
-     */
-    private void eventHandler(Packet packet) {
-        switch (packet.event_type) {
-            case REPLY : // Server is replying with to a file request
-                fileLookupResult(packet.peerID);
-                break;
-            case QUIT_SERVER : // Server is closing the connection
-                closeConnection();
-                break;
-        }
-    }
-
-    /**
-     * This method outputs the results of the file lookup
-     * @param fileHolderId
-     */
-    private void fileLookupResult(int fileHolderId) {
-        if (fileHolderId >= 0) {
-            System.out.println("Client " + fileHolderId + " has the file");
-        } else {
-            System.out.println("No one has this file");
-        }
-    }
-
-    /**
-     * Getter for if the Client thread is running
-     * @return Boolean
-     */
-    public boolean isRunning() {
-        return running;
-    }
-
-    /**
-     * This method closes the connection with the Server
-     */
-    public void closeConnection(){
-        try {
-            s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        running = false;
-        System.out.println("Connection Closed");
-        System.exit(0);
-    }
-
     /**
      * This method requests the server to close its connection
      */
@@ -186,6 +189,15 @@ public class Client extends Thread{
             closeConnection();
         }
     }
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Miscellaneous methods
+    /**
+     * Getter for if the Client thread is running
+     * @return Boolean
+     */
+    public boolean isRunning() {
+        return running;
+    }
 
     /**
      * This method returns the value of the object in the form of a human-readable String
@@ -196,7 +208,8 @@ public class Client extends Thread{
                 "Client ID: %d\nServer Port: %d\nClient Port: %d\nFile Vector: %s",
                 peerID, serverPort, peerListenPort, String.valueOf(FILE_VECTOR));
     }
-
+/*--------------------------------------------------------------------------------------------------------------------*/
+    // Main
     /**
      * Main
      * @param args
@@ -267,5 +280,5 @@ public class Client extends Thread{
         }
 
     }
-
+/*--------------------------------------------------------------------------------------------------------------------*/
 }

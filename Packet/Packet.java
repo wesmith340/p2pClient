@@ -1,5 +1,4 @@
 package Packet;
-// This class defines the Packet.Packet.Packet.Packet structure. This structure will also be used in future projects, so there are some additional attributes included here, which will not be used in Project 2. These are marked below. When send ing a Packet.Packet.Packet.Packet, these attributes will just contain their default values specified in the constructor.
 
 import java.util.*;
 import java.io.*;
@@ -8,6 +7,8 @@ import java.io.*;
  * This class holds information to be sent over the internet
  */
 public class Packet implements Serializable{
+    //Declarations
+
     /*
       Event type determines how the packet should be handled
       EVENT_TYPE CODES
@@ -17,7 +18,7 @@ public class Packet implements Serializable{
         QUIT_CLIENT-> Client wants to quit
         QUIT_SERVER-> Server wants to quit
     */
-    public enum EVENT_TYPE {INITIALIZE, REQUEST, REPLY, QUIT_CLIENT, QUIT_SERVER};
+    public enum EVENT_TYPE {INITIALIZE, REQUEST, REPLY, QUIT_CLIENT, QUIT_SERVER}
 
     public int sender;  // sender id of packet
     public int recipient;  // recipient id of packet, not required to set for this project
@@ -28,7 +29,8 @@ public class Packet implements Serializable{
     public int peerID; // will contain the id of the peer that contains the file
     public int peerListenPort; // will contain the listening port of the peer that contains the file.
     public char[] FILE_VECTOR; // contains the clients file_vector
-
+    /*--------------------------------------------------------------------------------------------------------------------*/
+    // Constructors
     /**
      * No-Arg Constructor
      */
@@ -45,7 +47,6 @@ public class Packet implements Serializable{
         FILE_VECTOR = new char[64];
         Arrays.fill(FILE_VECTOR, '0');
     }
-
     /**
      * Constructor
      * @param sender
@@ -70,27 +71,8 @@ public class Packet implements Serializable{
         this.peerListenPort = peerListenPort;
         this.FILE_VECTOR = FILE_VECTOR;
     }
-
-    /**
-     * This method builds a Packet to reply to a file lookup request
-     * @param fileIndex
-     * @param peerID
-     */
-    public void idReplyPacket(int fileIndex, int peerID) {
-        this.event_type = EVENT_TYPE.REPLY;
-        this.fileIndex = fileIndex;
-        this.peerID = peerID;
-    }
-
-    /**
-     * This method builds a Packet to request the ID of a Client with a specific file
-     * @param fileIndex
-     */
-    public void fileLookupPacket(int fileIndex) {
-        this.event_type = EVENT_TYPE.REQUEST;
-        this.fileIndex = fileIndex;
-    }
-
+    /*--------------------------------------------------------------------------------------------------------------------*/
+    // Packet building methods
     /**
      * This method builds a Packet to give the Server basic info about a Client
      * @param peerID
@@ -103,26 +85,43 @@ public class Packet implements Serializable{
         this.peerListenPort = peerListenPort;
         this.FILE_VECTOR = FILE_VECTOR;
     }
-
+    /**
+     * This method builds a Packet to request the ID of a Client with a specific file
+     * @param fileIndex
+     */
+    public void fileLookupPacket(int fileIndex) {
+        this.event_type = EVENT_TYPE.REQUEST;
+        this.fileIndex = fileIndex;
+    }
+    /**
+     * This method builds a Packet to reply to a file lookup request
+     * @param fileIndex
+     * @param peerID
+     */
+    public void idReplyPacket(int fileIndex, int peerID) {
+        this.event_type = EVENT_TYPE.REPLY;
+        this.fileIndex = fileIndex;
+        this.peerID = peerID;
+    }
     /**
      * This method builds a Packet to request the Server close a Client Connection
      */
     public void ClientQuit() {
         this.event_type = EVENT_TYPE.QUIT_CLIENT;
     }
-
     /**
      * This method builds a Packet to tell a Client to close their connection
      */
     public void ServerQuit() {
         this.event_type = EVENT_TYPE.QUIT_SERVER;
     }
-
+    /*--------------------------------------------------------------------------------------------------------------------*/
+    // Miscellaneous methods
     /**
      * This method prints the contents of a Packet to the console
      */
     public void printPacket() {
-        System.out.println("Packet.Packet.Packet.Packet Contents");
+        System.out.println("Packet Contents");
         System.out.println("---------------");
         System.out.println("Sender ID : "+sender);
         System.out.println("Receiver ID : "+recipient);
@@ -134,7 +133,6 @@ public class Packet implements Serializable{
         System.out.println("Peer Listen Port : "+peerListenPort);
         System.out.println("File Vector : "+String.valueOf(FILE_VECTOR));
     }
-
-
+    /*--------------------------------------------------------------------------------------------------------------------*/
 }
 
