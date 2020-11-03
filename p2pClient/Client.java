@@ -97,7 +97,8 @@ public class Client extends Thread{
             outputStream.flush();
 
             while (running) {
-                eventHandler((Packet)inputStream.readObject());
+                Packet p = (Packet)inputStream.readObject();
+                eventHandler(p);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,7 +106,7 @@ public class Client extends Thread{
             System.exit(0);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.out.println("p2pClient package does not contain this class");
+            System.out.println("Please load the Packet package");
         }
     }
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -116,8 +117,8 @@ public class Client extends Thread{
      */
     private void eventHandler(Packet packet) {
         switch (packet.event_type) {
-            case REPLY : // Server is replying with to a file request
-                fileLookupResult(packet.peerID);
+            case REPLY : // Server is replying to a file request
+                fileLookupResult(packet.peerID, packet.fileIndex);
                 break;
             case QUIT_SERVER : // Server is closing the connection
                 closeConnection();
@@ -128,11 +129,11 @@ public class Client extends Thread{
      * This method outputs the results of the file lookup
      * @param fileHolderId
      */
-    private void fileLookupResult(int fileHolderId) {
+    private void fileLookupResult(int fileHolderId, int fileIndex) {
         if (fileHolderId >= 0) {
-            System.out.println("Client " + fileHolderId + " has the file");
+            System.out.println("Client " + fileHolderId + " has the file index: "+fileIndex);
         } else {
-            System.out.println("No one has this file");
+            System.out.println("No one has this file index: "+ fileIndex);
         }
     }
     /**
@@ -163,7 +164,7 @@ public class Client extends Thread{
             try {
                 outputStream.writeObject(fileLookupPacket);
                 outputStream.flush();
-                System.out.println("Sent packet");
+                System.out.println("Sent packet\n");
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Error sending packet");
@@ -253,17 +254,18 @@ public class Client extends Thread{
 
         client.start();
 
+        System.out.println("Key codes :\n" +
+                "  f <- for file lookup\n" +
+                "  i <- for information on this Client\n" +
+                "  q <- to quit");
+
         //done! now loop for user input
         while (client.isRunning()){
+
             // User inputs
-            System.out.println("Key codes :\n" +
-                    "  f <- for file lookup\n" +
-                    "  i <- for information on this Client\n" +
-                    "  q <- to quit");
             Scanner scanner = new Scanner(System.in);
             char input = scanner.nextLine().toLowerCase().charAt(0);
             if (client.isRunning()) {
-
 
                 if (input == 'f') {
                     System.out.println("Please enter the index of the file you are looking for");
@@ -275,10 +277,7 @@ public class Client extends Thread{
                     client.askToClose();
                 }
             }
-            scanner.nextLine();
-
         }
-
     }
 /*--------------------------------------------------------------------------------------------------------------------*/
 }
